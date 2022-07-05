@@ -1,0 +1,89 @@
+---
+title: "Hw4"
+author: "Arya Ranadive"
+date: "6/8/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Indeed Data Frame
+
+
+```{r dataframe, include=FALSE}
+library("RCurl")
+library("XML")
+library("RJSONIO")
+
+source("functions4hw4.r")
+BaseURL = "https://www.indeed.com"
+cookies = "CTK=1g55dnqbghsma801; ctkgen=1;JSESSIONID=EA2EC2FE26FDFEF7E0548929DE72B571; indeed_rcc=''; INDEED_CSRF_TOKEN=jjXg0roGHDo4cdOmQ9N2E5GFB7mWJ0nh; PREF='TM=1654818335100:L=California'; Version=1; Max-Age=157680000; UD='LA=1654818335:CV=1654818335:TS=1654818335:SG=4b34e9a7ef0be7004606e1d401c989b2'; Version=1; Max-Age=157680000;NBDVJ='';RQ='q=Data+Scientist&l=California&ts=1654818335125';jaSerpCount=1;"
+
+con = getCurlHandle(followlocation = TRUE, cookie = cookies)
+t = "https://www.indeed.com/jobs?q=Data%20Scientist&l=California&redirected=1&vjk=de2c067e43d5b964"
+
+
+ds <- getIndeed(t, BaseURL, con, "Data Scientist")
+
+```
+
+```{r}
+source("functions4hw4.r")
+v = "https://www.indeed.com/jobs?q=Data%20Engineer&l=California&vjk=5d1f43db1475af44"
+dr <- getIndeed(v, BaseURL, con, "Data Engineer")
+```
+
+```{r }
+x = "https://www.indeed.com/jobs?q=Data%20Analyst&l=California&vjk=5d1f43db1475af44"
+da <- getIndeed(x, BaseURL, con, "Data Analyst")
+```
+
+```{r}
+da <- rbind(da, dr)
+da <- rbind(da, ds)
+head(da)
+```
+
+## Analysis
+
+#### Comparing In-Person and Remote
+Out of the 1800 jobs looked at, I looked at the total jobs that were remote, in-person, hybrid. I also looked at how many jobs were remote for the job categories that I looked at. 
+```{r}
+sum(da$Remote == 'Remote')
+sum(da$Remote == 'In-Person')
+sum(da$Remote == 'Hybrid')
+
+
+sum(da$Remote == 'Remote' & da$JobCategory == 'Data Scientist')
+sum(da$Remote == 'Remote' & da$JobCategory == 'Data Engineer')
+sum(da$Remote == 'Remote' & da$JobCategory == 'Data Analyst')
+
+
+```
+
+
+#### Where are the jobs located? 
+Here are the top 5 cities in California where the subset of jobs are located: 
+```{r}
+names(sort(table(da$Location), decreasing = TRUE)[1:6]) [-3]
+
+```
+
+#### Companies with the highest ratings?
+
+```{r}
+
+unique(subset(da, Ratings >= 5.0)$CompanyName)
+
+```
+
+## Largest Companies
+Some of the largest companies (not listed in order) are listed below. 
+```{r}
+
+unique(subset(da, CompanySize = 'more than 10,000')$CompanyName)[1:10]
+
+```
+
